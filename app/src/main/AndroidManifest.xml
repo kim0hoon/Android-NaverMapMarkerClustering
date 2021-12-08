@@ -10,9 +10,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.NaverMapMarkerClustring"
         android:fullBackupContent="true">
-        <meta-data
-            android:name="com.naver.maps.map.CLIENT_ID"
-            android:value="NAVER_MAP_CLIENT_ID" />
 
         <activity
             android:name=".MainActivity"
