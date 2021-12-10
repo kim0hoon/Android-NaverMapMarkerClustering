@@ -9,6 +9,9 @@ properties.load(project.rootProject.file('local.properties').newDataInputStream(
 android {
     compileSdk 31
 
+    viewBinding {
+        enabled = true
+    }
     defaultConfig {
         buildConfigField "String", "NAVER_MAP_CLIENT_ID", properties["naver_map_client_id"]
         applicationId "com.example.navermapmarkerclustring"
