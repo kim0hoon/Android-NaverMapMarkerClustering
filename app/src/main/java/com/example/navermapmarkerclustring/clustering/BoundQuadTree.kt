@@ -5,8 +5,8 @@ import com.naver.maps.geometry.LatLngBounds
 
 class BoundQuadTree<T : ClusterData>(val bound: LatLngBounds) {
     companion object {
-        val DATA_NUM = 30
-        val MAX_HEIGHT = 30
+        const val DATA_NUM = 30
+        const val MAX_HEIGHT = 30
     }
 
     private val dataList = ArrayList<T>()
