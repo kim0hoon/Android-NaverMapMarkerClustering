@@ -1,15 +1,16 @@
 package com.example.navermapmarkerclustring.clustering
 
+import com.example.navermapmarkerclustring.base.KOREA_LAT_LNG_BOUNDS
 import com.naver.maps.map.NaverMap
-import com.naver.maps.map.overlay.Marker
 
-class ClusteringManager(naverMap: NaverMap) {
+class ClusteringManager<T : ClusterData>(private val naverMap: NaverMap) {
+    private var quadTree = BoundQuadTree<T>(naverMap.extent ?: KOREA_LAT_LNG_BOUNDS)
 
-    fun clearMarker(){
-
+    fun clearData() {
+        quadTree = BoundQuadTree(naverMap.extent ?: KOREA_LAT_LNG_BOUNDS)
     }
 
-    fun addMarker(marker: Marker){
-
+    fun addData(data: T) {
+        quadTree.addData(data)
     }
 }
