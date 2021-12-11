@@ -9,3 +9,7 @@
 - BaseActivity 적용
 - ViewBinding 적용
 - 패키지 구조 생성 중
+
+### 2021/12/11
+- ClusterData 생성
+- QuadTree 구현
