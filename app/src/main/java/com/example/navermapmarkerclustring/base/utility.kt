@@ -9,8 +9,10 @@ const val KOREA_MIN_LAT = 33.0
 const val KOREA_MAX_LAT = 43.0
 const val KOREA_MIN_LNG = 124.0
 const val KOREA_MAX_LNG = 132.0
+val KOREA_LAT_LNG_BOUNDS =
+    LatLngBounds(LatLng(KOREA_MIN_LAT, KOREA_MIN_LNG), LatLng(KOREA_MAX_LAT, KOREA_MAX_LNG))
+
 fun makeKoreaMap(naverMap: NaverMap) {
     naverMap.minZoom = KOREA_ZOOM_LEVEL
-    naverMap.extent =
-        LatLngBounds(LatLng(KOREA_MIN_LAT, KOREA_MIN_LNG), LatLng(KOREA_MAX_LAT, KOREA_MAX_LNG))
+    naverMap.extent = KOREA_LAT_LNG_BOUNDS
 }
