@@ -3,17 +3,17 @@ package com.example.navermapmarkerclustring.clustering
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.geometry.LatLngBounds
 
-class BoundQuadTree<T : ClusterData>(val bound: LatLngBounds) {
+class BoundQuadTree(val bound: LatLngBounds) {
     companion object {
         const val DATA_NUM = 30
         const val MAX_HEIGHT = 30
     }
 
-    private val dataList = ArrayList<T>()
-    private val childList = ArrayList<BoundQuadTree<T>>()
+    private val dataList = ArrayList<ClusterData>()
+    private val childList = ArrayList<BoundQuadTree>()
 
 
-    fun addData(data: T) {
+    fun addData(data: ClusterData) {
         if (dataList.size >= DATA_NUM) {
             if (childList.isEmpty()) split()
             childList.forEach {
@@ -25,8 +25,8 @@ class BoundQuadTree<T : ClusterData>(val bound: LatLngBounds) {
         } else dataList.add(data)
     }
 
-    fun searchBoundData(searchBound: LatLngBounds): List<T> {
-        val ret = mutableListOf<T>()
+    fun searchBoundData(searchBound: LatLngBounds): List<ClusterData> {
+        val ret = mutableListOf<ClusterData>()
         if(searchBound.contains(bound)){
             //찾는 영역이 전체일 때
             ret.addAll(dataList)
