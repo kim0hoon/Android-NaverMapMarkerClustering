@@ -13,13 +13,14 @@ open class ClusterRenderer {
     fun rendering(naverMap: NaverMap, dataMap: HashMap<ClusterData, MutableList<ClusterData>>) {
         clearMarker()
         dataMap.forEach { clusterData ->
-            if (clusterData.value.size >= MIN_CLUSTER_NUM) clusterRendering(
-                clusterData.key,
-                clusterData.value
-            ).map = naverMap
-            else {
+            if (clusterData.value.size >= MIN_CLUSTER_NUM) {
+                markerList.add(clusterRendering(clusterData.key, clusterData.value).apply {
+                    map = naverMap
+                })
+
+            } else {
                 clusterData.value.forEach { data ->
-                    baseRendering(data).map = naverMap
+                    markerList.add(baseRendering(data).apply { map = naverMap })
                 }
             }
         }
