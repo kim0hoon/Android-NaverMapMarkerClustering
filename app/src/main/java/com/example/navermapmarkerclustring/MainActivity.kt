@@ -2,8 +2,10 @@ package com.example.navermapmarkerclustring
 
 import android.os.Bundle
 import com.example.navermapmarkerclustring.base.BaseActivity
+import com.example.navermapmarkerclustring.base.initTestData
 import com.example.navermapmarkerclustring.base.makeKoreaMap
 import com.example.navermapmarkerclustring.clustering.ClusterData
+import com.example.navermapmarkerclustring.clustering.ClusterRenderer
 import com.example.navermapmarkerclustring.clustering.ClusteringManager
 import com.example.navermapmarkerclustring.databinding.ActivityMainBinding
 import com.naver.maps.map.MapFragment
@@ -14,7 +16,7 @@ import com.naver.maps.map.OnMapReadyCallback
 class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::inflate),
     OnMapReadyCallback {
 
-    private lateinit var clusteringManager: ClusteringManager<ClusterData>
+    private lateinit var clusteringManager: ClusteringManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -36,6 +38,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
 
     override fun onMapReady(naverMap: NaverMap) {
         makeKoreaMap(naverMap)
-        clusteringManager = ClusteringManager(naverMap)
+        clusteringManager = ClusteringManager(naverMap, ClusterRenderer())
+        initTestData().forEach{
+            clusteringManager.addData(it)
+        }
+        clusteringManager.clustering()
     }
 }
