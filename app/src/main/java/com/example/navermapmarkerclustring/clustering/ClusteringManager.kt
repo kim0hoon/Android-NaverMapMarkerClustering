@@ -4,6 +4,12 @@ import com.example.navermapmarkerclustring.base.KOREA_LAT_LNG_BOUNDS
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.geometry.LatLngBounds
 import com.naver.maps.map.NaverMap
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.sqrt
 
 class ClusteringManager(
@@ -50,34 +56,42 @@ class ClusteringManager(
      * 클러스터링을 시행합니다
      */
     fun clustering() {
-        lastClusterZoomLevel = getZoomLevel()
-        dataList.forEach { it.clusterBase = null }
-        val latSize =
-            naverMap.contentBounds.run { (northLatitude - southLatitude) * CLUSTER_BOUND_RATIO }
-        val lngSize =
-            naverMap.contentBounds.run { (eastLongitude - westLongitude) * CLUSTER_BOUND_RATIO }
-        val dataMap = HashMap<ClusterData, MutableList<ClusterData>>()
-        for (base in dataList) {
-            if (base.clusterBase != null) continue
-            base.run { clusterBase = this }
-            val southWest = base.pos.run {
-                LatLng(latitude - latSize / 2, longitude - lngSize / 2)
-            }
-            val northEast = base.pos.run {
-                LatLng(latitude + latSize / 2, longitude + lngSize / 2)
-            }
+        CoroutineScope(IO).launch {
+            lastClusterZoomLevel = getZoomLevel()
+            dataList.forEach { it.clusterBase = null }
+            val latSize =
+                naverMap.contentBounds.run { (northLatitude - southLatitude) * CLUSTER_BOUND_RATIO }
+            val lngSize =
+                naverMap.contentBounds.run { (eastLongitude - westLongitude) * CLUSTER_BOUND_RATIO }
+            val dataMap = HashMap<ClusterData, MutableList<ClusterData>>()
+            for (base in dataList) {
+                if (base.clusterBase != null) continue
+                base.run { clusterBase = this }
+                val southWest = base.pos.run {
+                    LatLng(latitude - latSize / 2, longitude - lngSize / 2)
+                }
+                val northEast = base.pos.run {
+                    LatLng(latitude + latSize / 2, longitude + lngSize / 2)
+                }
 
-            quadTree.searchBoundData(LatLngBounds(southWest, northEast)).forEach { data ->
-                if (data.clusterBase == null) data.clusterBase = base
-                else if (getDist(data.pos, data.clusterBase!!.pos) > getDist(data.pos, base.pos)) {
-                    data.clusterBase = base
+                quadTree.searchBoundData(LatLngBounds(southWest, northEast)).forEach { data ->
+                    if (data.clusterBase == null) data.clusterBase = base
+                    else if (getDist(data.pos, data.clusterBase!!.pos) > getDist(
+                            data.pos,
+                            base.pos
+                        )
+                    ) {
+                        data.clusterBase = base
+                    }
                 }
             }
+            dataList.forEach {
+                (dataMap.getOrPut(it.clusterBase!!) { mutableListOf() }).run { add(it) }
+            }
+            withContext(Main) {
+                renderer.rendering(naverMap, dataMap)
+            }
         }
-        dataList.forEach {
-            (dataMap.getOrPut(it.clusterBase!!) { mutableListOf() }).run { add(it) }
-        }
-        renderer.rendering(naverMap,dataMap)
     }
 
     /**
