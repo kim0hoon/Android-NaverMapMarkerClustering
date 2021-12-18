@@ -1,6 +1,5 @@
 package com.example.navermapmarkerclustring.base
 
-import com.example.navermapmarkerclustring.clustering.ClusterData
 import com.example.navermapmarkerclustring.clustering.MarkerData
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.geometry.LatLngBounds
