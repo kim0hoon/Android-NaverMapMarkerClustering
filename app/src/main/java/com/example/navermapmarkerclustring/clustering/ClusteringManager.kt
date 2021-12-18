@@ -69,14 +69,6 @@ class ClusteringManager(
             for (base in dataList) {
                 if (base.lastLevel == nowLevel) continue
 
-                synchronized(base) {
-                    if (nowLevel != lastClusterZoomLevel) return@synchronized
-                    base.run {
-                        basePos = this.markerData.pos
-                        lastLevel = nowLevel
-                    }
-
-                }
                 val southWest = base.markerData.pos.run {
                     LatLng(latitude - latSize / 2, longitude - lngSize / 2)
                 }
