@@ -36,7 +36,7 @@ class ClusteringManager(
      * 마커 데이터를 추가합니다
      */
     fun addData(data: MarkerData) {
-        val clusterData = ClusterData(data)
+        val clusterData = ClusterData(data, data.pos)
         quadTree.addData(clusterData)
         dataList.add(clusterData)
     }
@@ -45,6 +45,7 @@ class ClusteringManager(
      * 지도의 카메라 이동 Listener을 추가합니다
      * 기존 NaverMap에 Listener을 추가할 경우 클러스터링이 작동 안할 수 있습니다
      */
+
     fun addOnCameraChangeListener(listener: NaverMap.OnCameraChangeListener) {
         naverMap.addOnCameraChangeListener { i, b ->
             if (lastClusterZoomLevel != getZoomLevel()) clustering()
@@ -58,15 +59,24 @@ class ClusteringManager(
     fun clustering() {
         CoroutineScope(IO).launch {
             lastClusterZoomLevel = getZoomLevel()
-            dataList.forEach { it.basePos = null }
+            val nowLevel = lastClusterZoomLevel
+
             val latSize =
                 naverMap.contentBounds.run { (northLatitude - southLatitude) * CLUSTER_BOUND_RATIO }
             val lngSize =
                 naverMap.contentBounds.run { (eastLongitude - westLongitude) * CLUSTER_BOUND_RATIO }
             val dataMap = HashMap<LatLng, MutableList<ClusterData>>()
             for (base in dataList) {
-                if (base.basePos != null) continue
-                base.run { basePos = this.markerData.pos }
+                if (base.lastLevel == nowLevel) continue
+
+                synchronized(base) {
+                    if (nowLevel != lastClusterZoomLevel) return@synchronized
+                    base.run {
+                        basePos = this.markerData.pos
+                        lastLevel = nowLevel
+                    }
+
+                }
                 val southWest = base.markerData.pos.run {
                     LatLng(latitude - latSize / 2, longitude - lngSize / 2)
                 }
@@ -75,21 +85,29 @@ class ClusteringManager(
                 }
 
                 quadTree.searchBoundData(LatLngBounds(southWest, northEast)).forEach { data ->
-                    if (data.basePos == null) data.basePos = base.markerData.pos
-                    else if (getDist(data.markerData.pos, data.basePos!!) > getDist(
-                            data.markerData.pos,
-                            base.markerData.pos
-                        )
-                    ) {
-                        data.basePos = base.markerData.pos
+                    synchronized(data) {
+                        if (nowLevel != lastClusterZoomLevel) return@synchronized
+                        if (data.lastLevel != nowLevel) {
+                            data.basePos = base.markerData.pos
+                            data.lastLevel = nowLevel
+                        } else if (getDist(data.markerData.pos, data.basePos) > getDist(
+                                data.markerData.pos,
+                                base.markerData.pos
+                            )
+                        ) {
+                            data.basePos = base.markerData.pos
+                        }
                     }
                 }
             }
+
             dataList.forEach {
-                (dataMap.getOrPut(it.basePos!!) { mutableListOf() }).run { add(it) }
+                (dataMap.getOrPut(it.basePos) { mutableListOf() }).run { add(it) }
             }
-            withContext(Main) {
-                renderer.rendering(naverMap, dataMap)
+            if (nowLevel == lastClusterZoomLevel) {
+                withContext(Main) {
+                    renderer.rendering(naverMap, dataMap)
+                }
             }
         }
     }
