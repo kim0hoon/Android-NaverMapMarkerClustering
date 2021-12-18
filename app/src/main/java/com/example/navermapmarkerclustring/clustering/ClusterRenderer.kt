@@ -11,6 +11,7 @@ open class ClusterRenderer {
     /**
      * cluster가 지정된 map을 이용하여 NaverMap에 렌더링
      */
+    @Synchronized
     fun rendering(naverMap: NaverMap, dataMap: HashMap<LatLng, MutableList<ClusterData>>) {
         clearMarker()
         dataMap.forEach { clusterData ->
