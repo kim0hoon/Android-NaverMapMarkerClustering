@@ -36,9 +36,10 @@ class ClusteringManager(
     /**
      * 마커 데이터를 추가합니다
      */
-    fun addData(data: ClusterData) {
-        quadTree.addData(data)
-        dataList.add(data)
+    fun addData(data: MarkerData) {
+        val clusterData = ClusterData(data)
+        quadTree.addData(clusterData)
+        dataList.add(clusterData)
     }
 
     /**
@@ -58,35 +59,35 @@ class ClusteringManager(
     fun clustering() {
         CoroutineScope(IO).launch {
             lastClusterZoomLevel = getZoomLevel()
-            dataList.forEach { it.clusterBase = null }
+            dataList.forEach { it.basePos = null }
             val latSize =
                 naverMap.contentBounds.run { (northLatitude - southLatitude) * CLUSTER_BOUND_RATIO }
             val lngSize =
                 naverMap.contentBounds.run { (eastLongitude - westLongitude) * CLUSTER_BOUND_RATIO }
-            val dataMap = HashMap<ClusterData, MutableList<ClusterData>>()
+            val dataMap = HashMap<LatLng, MutableList<ClusterData>>()
             for (base in dataList) {
-                if (base.clusterBase != null) continue
-                base.run { clusterBase = this }
-                val southWest = base.pos.run {
+                if (base.basePos != null) continue
+                base.run { basePos = this.markerData.pos }
+                val southWest = base.markerData.pos.run {
                     LatLng(latitude - latSize / 2, longitude - lngSize / 2)
                 }
-                val northEast = base.pos.run {
+                val northEast = base.markerData.pos.run {
                     LatLng(latitude + latSize / 2, longitude + lngSize / 2)
                 }
 
                 quadTree.searchBoundData(LatLngBounds(southWest, northEast)).forEach { data ->
-                    if (data.clusterBase == null) data.clusterBase = base
-                    else if (getDist(data.pos, data.clusterBase!!.pos) > getDist(
-                            data.pos,
-                            base.pos
+                    if (data.basePos == null) data.basePos = base.markerData.pos
+                    else if (getDist(data.markerData.pos, data.basePos!!) > getDist(
+                            data.markerData.pos,
+                            base.markerData.pos
                         )
                     ) {
-                        data.clusterBase = base
+                        data.basePos = base.markerData.pos
                     }
                 }
             }
             dataList.forEach {
-                (dataMap.getOrPut(it.clusterBase!!) { mutableListOf() }).run { add(it) }
+                (dataMap.getOrPut(it.basePos!!) { mutableListOf() }).run { add(it) }
             }
             withContext(Main) {
                 renderer.rendering(naverMap, dataMap)

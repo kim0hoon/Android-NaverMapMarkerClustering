@@ -1,6 +1,7 @@
 package com.example.navermapmarkerclustring.base
 
 import com.example.navermapmarkerclustring.clustering.ClusterData
+import com.example.navermapmarkerclustring.clustering.MarkerData
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.geometry.LatLngBounds
 import com.naver.maps.map.NaverMap
@@ -19,10 +20,10 @@ fun makeKoreaMap(naverMap: NaverMap) {
     naverMap.extent = KOREA_LAT_LNG_BOUNDS
 }
 
-fun initTestData() = mutableListOf<ClusterData>().apply {
+fun initTestData() = mutableListOf<MarkerData>().apply {
     repeat(10000) {
         add(
-            ClusterData(
+            MarkerData(
                 LatLng(
                     Random.nextDouble(KOREA_MIN_LAT, KOREA_MAX_LAT),
                     Random.nextDouble(KOREA_MIN_LNG, KOREA_MAX_LNG)

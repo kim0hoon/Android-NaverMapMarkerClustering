@@ -17,7 +17,7 @@ class BoundQuadTree(val bound: LatLngBounds) {
         if (dataList.size >= DATA_NUM) {
             if (childList.isEmpty()) split()
             childList.forEach {
-                if (it.bound.contains(data.pos)) {
+                if (it.bound.contains(data.markerData.pos)) {
                     it.addData(data)
                     return
                 }
@@ -35,7 +35,7 @@ class BoundQuadTree(val bound: LatLngBounds) {
             }
         }else {
             //찾는 영역이 전체가 아닐 때
-            ret.addAll(dataList.filter{searchBound.contains(it.pos)})
+            ret.addAll(dataList.filter{searchBound.contains(it.markerData.pos)})
             childList.forEach{
                 if(it.bound.intersects(searchBound)) ret.addAll(it.searchBoundData(searchBound))
             }
