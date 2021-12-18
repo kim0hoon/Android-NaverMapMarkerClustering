@@ -20,7 +20,7 @@ fun makeKoreaMap(naverMap: NaverMap) {
 }
 
 fun initTestData() = mutableListOf<ClusterData>().apply {
-    repeat(1000) {
+    repeat(10000) {
         add(
             ClusterData(
                 LatLng(
