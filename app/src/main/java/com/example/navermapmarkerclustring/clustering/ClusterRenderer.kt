@@ -1,6 +1,7 @@
 package com.example.navermapmarkerclustring.clustering
 
 import com.naver.maps.geometry.LatLng
+import com.naver.maps.geometry.LatLngBounds
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.overlay.Align
 import com.naver.maps.map.overlay.Marker
@@ -12,9 +13,10 @@ open class ClusterRenderer {
      * cluster가 지정된 map을 이용하여 NaverMap에 렌더링
      */
     @Synchronized
-    fun rendering(naverMap: NaverMap, dataMap: HashMap<LatLng, MutableList<ClusterData>>) {
+    fun rendering(naverMap: NaverMap, dataMap: HashMap<LatLng, MutableList<ClusterData>>, bound: LatLngBounds) {
         clearMarker()
         dataMap.forEach { clusterData ->
+            if(!bound.contains(clusterData.key)) return@forEach
             if (clusterData.value.size >= MIN_CLUSTER_NUM) {
                 markerList.add(clusterRendering(clusterData.key, clusterData.value).apply {
                     map = naverMap
