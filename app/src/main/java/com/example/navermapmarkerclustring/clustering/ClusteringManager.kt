@@ -18,9 +18,12 @@ class ClusteringManager(
     private var quadTree = BoundQuadTree(naverMap.extent ?: KOREA_LAT_LNG_BOUNDS)
     private val dataList = mutableListOf<ClusterData>()
     private var lastClusterZoomLevel = getZoomLevel()
+    private var clusterMap = HashMap<LatLng, MutableList<ClusterData>>()
+    private var displayBound: LatLngBounds = naverMap.contentBounds
 
     init {
         naverMap.addOnCameraChangeListener { i, b ->
+            resizeBound(naverMap.contentBounds)
             if (lastClusterZoomLevel != getZoomLevel()) clustering()
         }
         clustering()
@@ -86,12 +89,25 @@ class ClusteringManager(
             dataList.forEach {
                 (dataMap.getOrPut(it.basePos) { mutableListOf() }).run { add(it) }
             }
+
+            synchronized(clusterMap) {
+                if (nowLevel != lastClusterZoomLevel) return@synchronized
+                clusterMap = dataMap
+
+            }
             if (nowLevel == lastClusterZoomLevel) {
                 withContext(Main) {
-                    renderer.rendering(naverMap, dataMap)
+                    rendering()
                 }
             }
         }
+    }
+
+    /**
+     * 현재 상태에 따른 rendering을 실행합니다
+     */
+    private fun rendering() {
+        renderer.rendering(naverMap, clusterMap, displayBound)
     }
 
     /**
@@ -105,9 +121,33 @@ class ClusteringManager(
     private fun getDist(s: LatLng, e: LatLng) =
         sqrt((s.latitude - e.latitude) * (s.latitude - e.latitude) + (s.longitude - e.longitude) * (s.longitude - e.longitude))
 
+    /**
+     * 현재 카메라 영역에 따라 바운드를 재조정
+     */
+    @Synchronized
+    private fun resizeBound(bound: LatLngBounds) {
+        if (bound.contains(bound) && !isUnderBound(bound)) return
+        val latSize=bound.run{(northLatitude - southLatitude)}
+        val lngSize=bound.run{(eastLongitude - westLongitude)}
+        val midLat=bound.run{(northLatitude + southLatitude)/2}
+        val midLng=bound.run{(eastLongitude + westLongitude)/2}
+        val southWest=LatLng(midLat-latSize* BOUND_RATIO_MAX/2,midLng-lngSize* BOUND_RATIO_MAX/2)
+        val northEast=LatLng(midLat+latSize* BOUND_RATIO_MAX/2,midLng+lngSize* BOUND_RATIO_MAX/2)
+        displayBound=LatLngBounds(southWest,northEast)
+        rendering()
+    }
+
+    private fun isUnderBound(bound: LatLngBounds): Boolean {
+        val latSize = displayBound.run { (northLatitude - southLatitude) / BOUND_RATIO_MIN }
+        val lngSize = displayBound.run { (eastLongitude - westLongitude) / BOUND_RATIO_MIN }
+        return bound.run { (northLatitude - southLatitude) > latSize && (eastLongitude - westLongitude) > lngSize }
+    }
+
     companion object {
         const val CLUSTER_BOUND_RATIO = 0.3
         const val CLUSTER_ZOOM_LEVEL_RANGE = 0.5
+        const val BOUND_RATIO_MAX = 3.0
+        const val BOUND_RATIO_MIN = 3.0
     }
 
 }
