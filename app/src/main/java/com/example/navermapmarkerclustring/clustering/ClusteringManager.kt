@@ -20,7 +20,9 @@ class ClusteringManager(
     private var lastClusterZoomLevel = getZoomLevel()
 
     init {
-        addOnCameraChangeListener { _, _ -> }
+        naverMap.addOnCameraChangeListener { i, b ->
+            if (lastClusterZoomLevel != getZoomLevel()) clustering()
+        }
         clustering()
     }
 
@@ -39,18 +41,6 @@ class ClusteringManager(
         val clusterData = ClusterData(data, data.pos)
         quadTree.addData(clusterData)
         dataList.add(clusterData)
-    }
-
-    /**
-     * 지도의 카메라 이동 Listener을 추가합니다
-     * 기존 NaverMap에 Listener을 추가할 경우 클러스터링이 작동 안할 수 있습니다
-     */
-
-    fun addOnCameraChangeListener(listener: NaverMap.OnCameraChangeListener) {
-        naverMap.addOnCameraChangeListener { i, b ->
-            if (lastClusterZoomLevel != getZoomLevel()) clustering()
-            listener.onCameraChange(i, b)
-        }
     }
 
     /**
