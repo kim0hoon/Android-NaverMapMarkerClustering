@@ -35,11 +35,11 @@ https://user-images.githubusercontent.com/14107670/146009546-045608e8-6900-4141-
 - 클러스터링 연산에 코루틴 적용 
 - 동기화 적용
 
-- 코루틴 적용 전
+- 코루틴 적용 전 (마커 10000개)
 
 https://user-images.githubusercontent.com/14107670/146641383-3407ab98-8b1a-4f98-b881-8aa9ac35ecd8.mp4
 
-- 코루틴 적용 후
+- 코루틴 적용 후 (마커 10000개)
 
 https://user-images.githubusercontent.com/14107670/146641388-27c39696-5b43-49ec-b8b6-f483dff1b3a2.mp4
 
@@ -48,3 +48,12 @@ https://user-images.githubusercontent.com/14107670/146641388-27c39696-5b43-49ec-
 
 - <b>개선하고 싶은 점</b>
   - 렌더링 최적화(카메라 영역에 대해서만 렌더링)
+
+### 2021/12/21
+- 카메라 위치에 따라 Bound를 지정
+- Bound내부에 있는 Cluster된 마커만 Rendering
+- 높은 줌 레벨(확대된 레벨)에서 버벅거리는 현상 개선
+- Bound 적용 후 (마커 10000개)
+
+https://user-images.githubusercontent.com/14107670/146937377-72d777bc-756d-4de0-9a7b-9966a59e4aaa.mp4
+
